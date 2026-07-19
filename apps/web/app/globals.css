@@ -26,25 +26,27 @@
   --radius-control: 8px;
 }
 
-html,
-body {
-  margin: 0;
-  padding: 0;
-  background: var(--color-bg);
-  color: var(--color-ink);
-}
+@layer base {
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    background: var(--color-bg);
+    color: var(--color-ink);
+  }
 
-a {
-  color: var(--color-accent);
-  text-decoration: none;
-}
-a:hover {
-  color: var(--color-accent-hover);
-  text-decoration: underline;
-}
+  a {
+    color: var(--color-accent);
+    text-decoration: none;
+  }
+  a:hover {
+    color: var(--color-accent-hover);
+    text-decoration: underline;
+  }
 
-input::placeholder {
-  color: var(--color-ink3);
+  input::placeholder {
+    color: var(--color-ink3);
+  }
 }
 
 @keyframes livetick {
