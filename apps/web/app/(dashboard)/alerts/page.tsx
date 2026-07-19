@@ -24,7 +24,7 @@ export default function AlertsPage() {
   const activeRules = rules.filter((r) => r.enabled).length;
 
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_300px] items-start gap-6">
+    <div className="grid grid-cols-1 items-start gap-6 min-[1100px]:grid-cols-[minmax(0,1fr)_300px]">
       <div className="flex min-w-0 flex-col gap-4">
         <div className="flex flex-col gap-1 rounded-card border border-line bg-surface p-5">
           <div className="mb-2 text-[15px] font-medium">Rules</div>
@@ -88,7 +88,7 @@ export default function AlertsPage() {
         </div>
       </div>
 
-      <div className="sticky top-0 flex flex-col gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3 min-[1100px]:sticky min-[1100px]:top-0 min-[1100px]:flex min-[1100px]:flex-col">
         <RailCard title="Last 7 days">
           <div className="flex gap-5">
             <div className="flex flex-col gap-0.5">

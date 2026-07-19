@@ -32,7 +32,7 @@ export default function HashtagsPage() {
   };
 
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_300px] items-start gap-6">
+    <div className="grid grid-cols-1 items-start gap-6 min-[1100px]:grid-cols-[minmax(0,1fr)_300px]">
       <div className="flex min-w-0 flex-col gap-4">
         <div className="flex items-center justify-between gap-4">
           <div className="text-[13px] text-ink2">
@@ -117,7 +117,7 @@ export default function HashtagsPage() {
         </div>
       </div>
 
-      <div className="sticky top-0 flex flex-col gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3 min-[1100px]:sticky min-[1100px]:top-0 min-[1100px]:flex min-[1100px]:flex-col">
         <RailCard title="Volume · 7 days">
           {leaderboard.length > 0 ? (
             <div className="flex flex-col gap-3">
