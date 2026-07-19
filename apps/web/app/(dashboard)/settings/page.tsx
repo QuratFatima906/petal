@@ -20,7 +20,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="flex max-w-[640px] flex-col gap-4">
+    <div className="mx-auto flex w-full max-w-[640px] flex-col gap-4">
       <div className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
         <div className="text-[15px] font-medium">Connection</div>
         <div className="flex items-center gap-3">

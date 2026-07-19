@@ -239,7 +239,8 @@
         </sc-if>
 
         <sc-if value="{{ showMentions }}" hint-placeholder-val="{{ false }}">
-          <div style="display: flex; flex-direction: column; gap: 12px; max-width: 760px;">
+         <div style="display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 24px; align-items: start;">
+          <div style="display: flex; flex-direction: column; gap: 12px; min-width: 0;">
             <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
               <div style="display: flex; border: 1px solid #2A3550; border-radius: 8px; overflow: hidden;">
                 <sc-for list="{{ sentimentSeg }}" as="seg" hint-placeholder-count="5">
@@ -292,6 +293,50 @@
               <button onClick="{{ loadMore }}" style="align-self: center; background: transparent; color: #98A2B8; border: 1px solid #2A3550; border-radius: 8px; padding: 8px 20px; font-family: Inter, sans-serif; font-size: 13px; cursor: pointer;" style-hover="background: #1F2839; color: #EDF0F7;">Load more</button>
             </sc-if>
           </div>
+          <div style="position: sticky; top: 0; display: flex; flex-direction: column; gap: 16px;">
+            <div style="background: #171E2E; border: 1px solid #2A3550; border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 14px;">
+              <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #5C6780;">This view</div>
+              <div style="display: flex; align-items: baseline; gap: 8px;">
+                <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 32px; line-height: 1;">{{ railTotal }}</span>
+                <span style="font-size: 13px; color: #98A2B8;">mentions</span>
+              </div>
+              <div style="display: flex; height: 8px; border-radius: 999px; overflow: hidden; background: #1F2839;">
+                <sc-for list="{{ railBar }}" as="seg" hint-placeholder-count="4">
+                  <div title="{{ seg.tip }}" style="width: {{ seg.pct }}%; background: {{ seg.color }};"></div>
+                </sc-for>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <sc-for list="{{ railSentiment }}" as="r" hint-placeholder-count="4">
+                  <button onClick="{{ r.onClick }}" style="{{ r.style }}" style-hover="background: #1F2839;">
+                    <span style="display: flex; align-items: center; gap: 8px;"><span style="width: 8px; height: 8px; border-radius: 2px; background: {{ r.color }};"></span>{{ r.label }}</span>
+                    <span style="font-family: 'JetBrains Mono', monospace; color: #EDF0F7;">{{ r.count }}</span>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+            <div style="background: #171E2E; border: 1px solid #2A3550; border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 12px;">
+              <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #5C6780;">Top intents</div>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <sc-for list="{{ railIntents }}" as="it" hint-placeholder-count="4">
+                  <button onClick="{{ it.onClick }}" style="{{ it.style }}" style-hover="border-color: #5C6780;">
+                    <span style="color: #98A2B8;">{{ it.label }}</span>
+                    <span style="font-family: 'JetBrains Mono', monospace; color: #EDF0F7;">{{ it.count }}</span>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+            <div style="background: #171E2E; border: 1px solid #2A3550; border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 10px;">
+              <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #5C6780;">Most active</div>
+              <sc-for list="{{ railPeople }}" as="p" hint-placeholder-count="3">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 26px; height: 26px; border-radius: 999px; background: #1F2839; border: 1px solid #2A3550; display: grid; place-items: center; flex: none; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 11px; color: #98A2B8;">{{ p.initial }}</div>
+                  <span style="flex: 1; min-width: 0; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ p.username }}</span>
+                  <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #98A2B8;">{{ p.count }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+         </div>
         </sc-if>
 
         <sc-if value="{{ emptyHashtags }}" hint-placeholder-val="{{ false }}">
@@ -304,7 +349,8 @@
         </sc-if>
 
         <sc-if value="{{ showHashtags }}" hint-placeholder-val="{{ false }}">
-          <div style="display: flex; flex-direction: column; gap: 16px; max-width: 760px;">
+         <div style="display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 24px; align-items: start;">
+          <div style="display: flex; flex-direction: column; gap: 16px; min-width: 0;">
             <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px;">
               <div style="font-size: 13px; color: #98A2B8;">Track up to 30 public hashtags. Instagram limits how many you can query per week.</div>
               <span style="flex: none; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #98A2B8; border: 1px solid #2A3550; border-radius: 999px; padding: 3px 10px;">{{ quotaLabel }}</span>
@@ -317,12 +363,12 @@
               <div style="font-size: 13px; color: #E4604E;">Hashtags are letters, numbers and underscores only — no spaces or #.</div>
             </sc-if>
             <div style="background: #171E2E; border: 1px solid #2A3550; border-radius: 10px; overflow: hidden;">
-              <div style="display: grid; grid-template-columns: 1fr 90px 120px 110px 70px; gap: 8px; padding: 10px 16px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #5C6780; border-bottom: 1px solid #2A3550;">
-                <span>Hashtag</span><span>Active</span><span>Posts · 7d</span><span>Last polled</span><span></span>
+              <div style="display: grid; grid-template-columns: minmax(0,1fr) 52px 64px 88px 62px; gap: 10px; padding: 10px 16px; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: #5C6780; border-bottom: 1px solid #2A3550;">
+                <span>Hashtag</span><span>Active</span><span>Posts</span><span>Polled</span><span></span>
               </div>
               <sc-for list="{{ hashtagRows }}" as="t" hint-placeholder-count="4">
-                <div style="display: grid; grid-template-columns: 1fr 90px 120px 110px 70px; gap: 8px; align-items: center; padding: 12px 16px; border-bottom: 1px solid #2A3550;" style-hover="background: #1F2839;">
-                  <span style="font-size: 15px; font-weight: 500;">#{{ t.name }}</span>
+                <div style="display: grid; grid-template-columns: minmax(0,1fr) 52px 64px 88px 62px; gap: 10px; align-items: center; padding: 12px 16px; border-bottom: 1px solid #2A3550;" style-hover="background: #1F2839;">
+                  <span style="font-size: 15px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">#{{ t.name }}</span>
                   <button onClick="{{ t.toggle }}" style="{{ t.toggleStyle }}"><span style="{{ t.knobStyle }}"></span></button>
                   <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: {{ t.postsColor }};">{{ t.posts }}</span>
                   <span style="font-size: 13px; color: #98A2B8;">{{ t.polled }}</span>
@@ -335,20 +381,65 @@
               <a href="#" onClick="{{ noop }}" style="font-size: 13px; flex: none;">How approval works</a>
             </div>
           </div>
+          <div style="position: sticky; top: 0; display: flex; flex-direction: column; gap: 16px;">
+            <div style="background: #171E2E; border: 1px solid #2A3550; border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 14px;">
+              <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #5C6780;">Volume · 7 days</div>
+              <sc-if value="{{ tagLeaderHas }}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                  <sc-for list="{{ tagLeader }}" as="t" hint-placeholder-count="4">
+                    <div style="display: flex; flex-direction: column; gap: 5px;">
+                      <div style="display: flex; justify-content: space-between; font-size: 13px;">
+                        <span style="color: {{ t.labelColor }};">#{{ t.name }}</span>
+                        <span style="font-family: 'JetBrains Mono', monospace; color: #EDF0F7;">{{ t.posts }}</span>
+                      </div>
+                      <div style="height: 6px; border-radius: 999px; background: #1F2839; overflow: hidden;">
+                        <div style="height: 100%; width: {{ t.pct }}%; background: {{ t.barColor }}; border-radius: 999px;"></div>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ tagLeaderEmpty }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size: 13px; color: #98A2B8;">No active hashtags yet. Toggle one on to start collecting posts.</div>
+              </sc-if>
+            </div>
+            <div style="background: #171E2E; border: 1px solid #2A3550; border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                <span style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #5C6780;">Weekly quota</span>
+                <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #EDF0F7;">{{ quotaActive }} / 30</span>
+              </div>
+              <div style="height: 8px; border-radius: 999px; background: #1F2839; overflow: hidden;">
+                <div style="height: 100%; width: {{ quotaPct }}%; background: #E8A13D; border-radius: 999px;"></div>
+              </div>
+              <div style="font-size: 13px; color: #98A2B8;">{{ quotaRemain }} slots left. Instagram resets your query budget every Monday.</div>
+            </div>
+            <div style="background: #171E2E; border: 1px solid #2A3550; border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 8px;">
+              <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #5C6780;">Trending</div>
+              <div style="display: flex; align-items: baseline; gap: 8px;">
+                <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 22px;">#{{ trendName }}</span>
+                <span style="font-size: 13px; color: #2FBF9B;">{{ trendDelta }}</span>
+              </div>
+              <div style="font-size: 13px; color: #98A2B8;">{{ trendNote }}</div>
+            </div>
+          </div>
+         </div>
         </sc-if>
 
         <sc-if value="{{ showAlerts }}" hint-placeholder-val="{{ false }}">
-          <div style="display: flex; flex-direction: column; gap: 16px; max-width: 760px;">
+         <div style="display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 24px; align-items: start;">
+          <div style="display: flex; flex-direction: column; gap: 16px; min-width: 0;">
             <div style="background: #171E2E; border: 1px solid #2A3550; border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 4px;">
               <div style="font-size: 15px; font-weight: 500; margin-bottom: 8px;">Rules</div>
               <sc-for list="{{ ruleRows }}" as="r" hint-placeholder-count="2">
-                <div style="display: flex; gap: 16px; align-items: flex-start; padding: 14px 0; border-top: 1px solid #2A3550;">
-                  <button onClick="{{ r.toggle }}" style="{{ r.toggleStyle }}"><span style="{{ r.knobStyle }}"></span></button>
-                  <div style="min-width: 0; flex: 1;">
-                    <div style="font-size: 15px; font-weight: 500; color: {{ r.nameColor }};">{{ r.name }}</div>
-                    <div style="font-size: 13px; color: #98A2B8;">{{ r.desc }}</div>
+                <div style="display: flex; flex-direction: column; gap: 12px; padding: 14px 0; border-top: 1px solid #2A3550;">
+                  <div style="display: flex; gap: 16px; align-items: flex-start;">
+                    <button onClick="{{ r.toggle }}" style="{{ r.toggleStyle }}"><span style="{{ r.knobStyle }}"></span></button>
+                    <div style="min-width: 0; flex: 1;">
+                      <div style="font-size: 15px; font-weight: 500; color: {{ r.nameColor }};">{{ r.name }}</div>
+                      <div style="font-size: 13px; color: #98A2B8;">{{ r.desc }}</div>
+                    </div>
                   </div>
-                  <div style="display: flex; gap: 10px; flex: none;">
+                  <div style="display: flex; flex-wrap: wrap; gap: 10px; padding-left: 52px;">
                     <sc-for list="{{ r.params }}" as="p" hint-placeholder-count="3">
                       <label style="display: flex; flex-direction: column; gap: 3px;">
                         <span style="font-size: 11px; color: #5C6780;">{{ p.label }}</span>
@@ -378,10 +469,45 @@
               </sc-if>
             </div>
           </div>
+          <div style="position: sticky; top: 0; display: flex; flex-direction: column; gap: 16px;">
+            <div style="background: #171E2E; border: 1px solid #2A3550; border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 14px;">
+              <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #5C6780;">Last 7 days</div>
+              <div style="display: flex; gap: 20px;">
+                <div style="display: flex; flex-direction: column; gap: 2px;">
+                  <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 32px; line-height: 1;">{{ alertFired }}</span>
+                  <span style="font-size: 13px; color: #98A2B8;">fired</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 2px;">
+                  <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 32px; line-height: 1;">{{ alertActiveRules }}</span>
+                  <span style="font-size: 13px; color: #98A2B8;">rules on</span>
+                </div>
+              </div>
+            </div>
+            <div style="background: #171E2E; border: 1px solid #2A3550; border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 12px;">
+              <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #5C6780;">Slack delivery</div>
+              <div style="display: flex; align-items: baseline; gap: 8px;">
+                <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 22px;">{{ deliveryRate }}</span>
+                <span style="font-size: 13px; color: #98A2B8;">delivered</span>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #98A2B8;"><span style="width: 8px; height: 8px; border-radius: 999px; background: #2FBF9B; flex: none;"></span>{{ deliverySent }} posted to #omahi-listening</div>
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #98A2B8;"><span style="width: 8px; height: 8px; border-radius: 999px; background: #E4604E; flex: none;"></span>{{ deliveryFailed }} failed — recorded here anyway</div>
+              </div>
+            </div>
+            <div style="background: #171E2E; border: 1px solid #2A3550; border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 6px;">
+              <div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #5C6780;">Next check</div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="width: 8px; height: 8px; border-radius: 999px; background: #E8A13D; flex: none; animation: livetick 2s ease-in-out infinite;"></span>
+                <span style="font-size: 15px; font-weight: 500;">in ~4 min</span>
+              </div>
+              <div style="font-size: 13px; color: #98A2B8;">Petal evaluates rules every 5 minutes against the latest mentions.</div>
+            </div>
+          </div>
+         </div>
         </sc-if>
 
         <sc-if value="{{ showSettings }}" hint-placeholder-val="{{ false }}">
-          <div style="display: flex; flex-direction: column; gap: 16px; max-width: 640px;">
+          <div style="display: flex; flex-direction: column; gap: 16px; max-width: 640px; margin: 0 auto; width: 100%;">
             <div style="background: #171E2E; border: 1px solid #2A3550; border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 12px;">
               <div style="font-size: 15px; font-weight: 500;">Connection</div>
               <div style="display: flex; align-items: center; gap: 12px;">
@@ -610,6 +736,41 @@ class Component extends DCLogic {
     );
     const feed = filtered.slice(0, s.visible).map(decorate);
     const negCount = filtered.filter((m) => m.sentiment === "negative").length;
+    // ---- Mentions insights rail (reacts to filters) ----
+    const railSrc = all.filter((m) =>
+      (s.sourceFilter === "all" || m.sourceKey === s.sourceFilter) &&
+      (q === "" || m.text.toLowerCase().includes(q) || m.username.toLowerCase().includes(q))
+    );
+    const railTotal = railSrc.length;
+    const sCount = (k) => railSrc.filter((m) => m.sentiment === k).length;
+    const railSentiment = [
+      { key: "positive", label: "Positive", color: T.pos },
+      { key: "negative", label: "Negative", color: T.neg },
+      { key: "neutral", label: "Neutral", color: T.neu },
+      { key: "mixed", label: "Mixed", color: T.mix },
+    ].map((r) => {
+      const count = sCount(r.key);
+      const on = s.sentimentFilter === r.key;
+      return { label: r.label, color: r.color, count: String(count),
+        style: "display:flex;align-items:center;justify-content:space-between;width:100%;text-align:left;cursor:pointer;border-radius:8px;padding:6px 8px;font-family:Inter,sans-serif;font-size:13px;color:#98A2B8;border:1px solid " + (on ? T.accent : "transparent") + ";background:" + (on ? "#1F2839" : "transparent") + ";",
+        onClick: () => this.setState({ sentimentFilter: on ? "all" : r.key, visible: 8 }) };
+    });
+    const railBar = [
+      { k: "positive", color: T.pos }, { k: "mixed", color: T.mix },
+      { k: "neutral", color: T.neu }, { k: "negative", color: T.neg },
+    ].map((b) => { const c = sCount(b.k); return { pct: railTotal ? Math.round((c / railTotal) * 100) : 0, color: b.color, tip: b.k + " · " + c }; });
+    const railIntents = Object.keys(intentLabels).map((k) => ({ k, count: railSrc.filter((m) => m.intent === k).length }))
+      .filter((x) => x.count > 0).sort((a, b) => b.count - a.count).slice(0, 4).map((x) => {
+        const on = s.intentFilters.includes(x.k);
+        return { label: intentLabels[x.k], count: String(x.count),
+          style: "display:flex;align-items:center;justify-content:space-between;width:100%;text-align:left;cursor:pointer;border-radius:8px;padding:6px 8px;font-family:Inter,sans-serif;font-size:13px;background:transparent;border:1px solid " + (on ? T.accent : "#2A3550") + ";",
+          onClick: () => this.setState((prev) => ({ intentFilters: on ? prev.intentFilters.filter((y) => y !== x.k) : [...prev.intentFilters, x.k], visible: 8 })) };
+      });
+    const peopleCounts = {};
+    railSrc.forEach((m) => { if (m.username !== "Public post") peopleCounts[m.username] = (peopleCounts[m.username] || 0) + 1; });
+    const railPeople = Object.keys(peopleCounts).map((u) => ({ username: u, count: peopleCounts[u] }))
+      .sort((a, b) => b.count - a.count).slice(0, 3)
+      .map((p) => ({ username: p.username, count: String(p.count), initial: p.username.replace("@", "").charAt(0).toUpperCase() }));
     const sentimentSeg = ["all", "positive", "negative", "neutral", "mixed"].map((k, i) => ({
       label: k === "all" ? "All" : k.charAt(0).toUpperCase() + k.slice(1),
       style: "border:none;cursor:pointer;padding:7px 12px;font-family:Inter,sans-serif;font-size:13px;" + (i > 0 ? "border-left:1px solid #2A3550;" : "") +
@@ -646,6 +807,14 @@ class Component extends DCLogic {
       knobStyle: "position:absolute;top:2px;" + (t.active ? "right:2px;background:#E8A13D;" : "left:2px;background:#5C6780;") + "width:14px;height:14px;border-radius:999px;display:block;transition:all 150ms ease-out;",
       remove: () => this.setState((prev) => ({ tags: prev.tags.filter((_, j) => j !== i) })),
     }));
+    // ---- Hashtags insights rail ----
+    const activeTags = s.tags.filter((t) => t.active && t.posts > 0);
+    const maxTagPosts = Math.max(1, ...activeTags.map((t) => t.posts));
+    const tagLeader = [...activeTags].sort((a, b) => b.posts - a.posts).map((t, i) => ({
+      name: t.name, posts: String(t.posts), pct: Math.round((t.posts / maxTagPosts) * 100),
+      labelColor: "#EDF0F7", barColor: i === 0 ? T.accent : "#6B7690",
+    }));
+    const quotaPct = Math.round((activeCount / 30) * 100);
 
     // ---- Alerts ----
     const ruleRows = s.rules.map((r, i) => ({
@@ -692,6 +861,7 @@ class Component extends DCLogic {
       filteredEmpty: filtered.length === 0,
       clearFilters: () => this.setState({ sentimentFilter: "all", intentFilters: [], sourceFilter: "all", query: "", visible: 8 }),
       feed, hasMore: filtered.length > s.visible,
+      railTotal: String(railTotal), railBar, railSentiment, railIntents, railPeople,
       loadMore: () => this.setState((prev) => ({ visible: prev.visible + 6 })),
       // Sheet
       showSheet: !!selD,
@@ -708,6 +878,9 @@ class Component extends DCLogic {
       emptyHashtags: empty && screen === "Hashtags",
       showHashtags: loaded && screen === "Hashtags",
       hashtagRows, quotaLabel: activeCount + " of 30 this week",
+      tagLeader, tagLeaderHas: tagLeader.length > 0, tagLeaderEmpty: tagLeader.length === 0,
+      quotaActive: String(activeCount), quotaPct, quotaRemain: 30 - activeCount,
+      trendName: "cycletracking", trendDelta: "▲ 40%", trendNote: "Most new posts this week came from #cycletracking.",
       newTag: s.newTag,
       onNewTag: (e) => this.setState({ newTag: e.target.value, tagError: false }),
       tagError: s.tagError,
@@ -720,6 +893,11 @@ class Component extends DCLogic {
       showAlerts: (loaded || empty) && screen === "Alerts",
       ruleRows, firedAlerts,
       alertsEmpty: firedAlerts.length === 0, alertsHasItems: firedAlerts.length > 0,
+      alertFired: String(firedAlerts.length),
+      alertActiveRules: String(s.rules.filter((r) => r.enabled).length),
+      deliveryRate: firedAlerts.length ? Math.round((firedAlerts.filter((a) => a.slackColor === T.pos).length / firedAlerts.length) * 100) + "%" : "—",
+      deliverySent: String(firedAlerts.filter((a) => a.slackColor === T.pos).length),
+      deliveryFailed: String(firedAlerts.filter((a) => a.slackColor === T.neg).length),
       // Settings
       showSettings: (loaded || empty) && screen === "Settings",
       slackTestLabel: s.slackTest === "sent" ? "Sent ✓" : "Send test message",
