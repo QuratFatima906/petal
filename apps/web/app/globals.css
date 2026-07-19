@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-bg: #0f1420;
+  --color-surface: #171e2e;
+  --color-surface2: #1f2839;
+  --color-line: #2a3550;
+  --color-ink: #edf0f7;
+  --color-ink2: #98a2b8;
+  --color-ink3: #5c6780;
+  --color-accent: #e8a13d;
+  --color-accent-hover: #f0b45e;
+  --color-accent-ink: #2a1b05;
+  --color-pos: #2fbf9b;
+  --color-neg: #e4604e;
+  --color-neu: #8a93a6;
+  --color-mix: #c9a8ff;
+  --color-ai: #8b7fe8;
+  --color-warn-bg: #3a2a14;
+
+  --font-display: var(--font-bricolage);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains);
+
+  --radius-card: 10px;
+  --radius-control: 8px;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-bg);
+  color: var(--color-ink);
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--color-accent-hover);
+  text-decoration: underline;
+}
+
+input::placeholder {
+  color: var(--color-ink3);
+}
+
+@keyframes livetick {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes sheetin {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

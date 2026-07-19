@@ -1,0 +1,10 @@
+# Private planning docs
+docs/petal-plan.md
+
+# Dependencies
+node_modules/
+
+# Env
+.env
+.env.*
+!.env.example
