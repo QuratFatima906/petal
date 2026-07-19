@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useDemo } from "@/lib/demo-state";
 import { PetalMark } from "./petal-mark";
 
 const NAV = [
@@ -14,6 +15,8 @@ const NAV = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { status } = useDemo();
+  const connected = status === "ready";
   return (
     <div className="flex w-[232px] flex-none flex-col border-r border-line px-3 pt-6 pb-4">
       <div className="flex items-center gap-2 px-3 pb-6">
@@ -48,8 +51,8 @@ export function Sidebar() {
         <div className="min-w-0">
           <div className="truncate text-[13px] font-medium text-ink">@omahi.app</div>
           <div className="flex items-center gap-[5px] text-[11px] text-ink2">
-            <span className="h-1.5 w-1.5 rounded-full bg-pos" />
-            Active
+            <span className="h-1.5 w-1.5 rounded-full" style={{ background: connected ? "var(--color-pos)" : "var(--color-ink3)" }} />
+            {connected ? "Active" : "Not connected"}
           </div>
         </div>
       </div>

@@ -1,11 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useDemo } from "@/lib/demo-state";
 
 export default function SettingsPage() {
   const [slackTest, setSlackTest] = useState<"idle" | "sent">("idle");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const resetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { reset } = useDemo();
+  const router = useRouter();
 
   useEffect(() => {
     return () => {
@@ -78,7 +82,11 @@ export default function SettingsPage() {
               <span className="text-[13px] text-neg">Everything, permanently?</span>
               <button
                 type="button"
-                onClick={() => setConfirmDelete(false)}
+                onClick={() => {
+                  setConfirmDelete(false);
+                  reset();
+                  router.push("/");
+                }}
                 className="cursor-pointer rounded-control border-none bg-neg px-3.5 py-[7px] text-[13px] font-medium text-surface"
               >
                 Yes, delete

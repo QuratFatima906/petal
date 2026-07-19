@@ -72,6 +72,24 @@
   }
 }
 
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes bloom {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: rotate(45deg) scale(0.78);
+  }
+  50% {
+    opacity: 1;
+    transform: rotate(45deg) scale(1);
+  }
+}
+
 @keyframes shimmer {
   0% {
     opacity: 0.55;

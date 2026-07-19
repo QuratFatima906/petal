@@ -4,6 +4,10 @@ docs/petal-plan.md
 # Dependencies
 node_modules/
 
+# Playwright
+test-results/
+playwright-report/
+
 # Env
 .env
 .env.*

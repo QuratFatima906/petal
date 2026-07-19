@@ -12,7 +12,7 @@ const TABLE_COLS = "minmax(0,1fr) 52px 64px 88px 62px";
 export default function HashtagsPage() {
   const [tags, setTags] = useState<readonly Hashtag[]>(INITIAL_TAGS);
   const [newTag, setNewTag] = useState("");
-  const [tagError, setTagError] = useState(false);
+  const [tagError, setTagError] = useState<string | null>(null);
 
   const activeCount = tags.filter((t) => t.active).length;
   const activeWithPosts = tags.filter((t) => t.active && t.posts > 0);
@@ -21,14 +21,18 @@ export default function HashtagsPage() {
   const quotaPct = Math.round((activeCount / TAG_LIMIT) * 100);
 
   const addTag = () => {
-    const v = newTag.trim().replace(/^#/, "");
+    const v = newTag.trim().replace(/^#/, "").toLowerCase();
     if (!TAG_PATTERN.test(v)) {
-      setTagError(true);
+      setTagError("Hashtags are letters, numbers and underscores only — no spaces or #.");
       return;
     }
-    setTags((prev) => [...prev, { name: v.toLowerCase(), active: true, posts: 0, polled: "just added" }]);
+    if (tags.some((t) => t.name === v)) {
+      setTagError(`Already tracking #${v}.`);
+      return;
+    }
+    setTags((prev) => [...prev, { name: v, active: true, posts: 0, polled: "just added" }]);
     setNewTag("");
-    setTagError(false);
+    setTagError(null);
   };
 
   return (
@@ -48,7 +52,7 @@ export default function HashtagsPage() {
             value={newTag}
             onChange={(e) => {
               setNewTag(e.target.value);
-              setTagError(false);
+              setTagError(null);
             }}
             onKeyDown={(e) => {
               if (e.key === "Enter") addTag();
@@ -65,9 +69,7 @@ export default function HashtagsPage() {
           </button>
         </div>
 
-        {tagError ? (
-          <div className="text-[13px] text-neg">Hashtags are letters, numbers and underscores only — no spaces or #.</div>
-        ) : null}
+        {tagError ? <div className="text-[13px] text-neg">{tagError}</div> : null}
 
         <div className="overflow-hidden rounded-card border border-line bg-surface">
           <div
