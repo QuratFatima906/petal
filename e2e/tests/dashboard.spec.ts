@@ -13,15 +13,18 @@ test("first run shows Connect screen and seeding reaches the Overview", async ({
   await page.getByRole("button", { name: "Explore with demo data" }).click();
   await expect(page.getByText("Listening for mentions…")).toBeVisible();
   await expect(page.getByText("Pulse · 6h buckets")).toBeVisible();
-  await expect(page.getByText("310", { exact: true })).toBeVisible();
+  // 50 = mentions in the Mon–Sun demo week of the 80-event @petal/fixtures
+  // dataset (sum of DAYS / WEEK_STATS.mentions; pinned in demo-data.test.ts).
+  await expect(page.getByText("50", { exact: true })).toBeVisible();
   await expect(page.getByText("Demo data")).toBeVisible();
 });
 
 seeded("feed filters by negative and opens the mention detail sheet", async ({ page }) => {
   await page.goto("/mentions");
-  await expect(page.getByText("14 mentions · 2 negative")).toBeVisible();
+  // 80 fixture events, 9 classified negative (pinned in demo-data.test.ts).
+  await expect(page.getByText("80 mentions · 9 negative")).toBeVisible();
   await page.getByRole("button", { name: "Negative", exact: true }).click();
-  await expect(page.getByText("2 mentions · 2 negative")).toBeVisible();
+  await expect(page.getByText("9 mentions · 9 negative")).toBeVisible();
   await page.getByText("The phase seems off by a day").click();
   await expect(page.getByText("AI classification")).toBeVisible();
   await expect(page.getByRole("button", { name: "Open on Instagram" })).toBeVisible();
