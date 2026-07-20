@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
   // Pin file tracing to the monorepo root so the standalone layout is always
   // <root>/apps/web/server.js, regardless of lockfiles above the checkout.
   outputFileTracingRoot: path.join(__dirname, "../.."),
+  // Workspace packages ship raw TypeScript (exports point at src/index.ts).
+  transpilePackages: ["@petal/core", "@petal/fixtures"],
 };
 
 export default nextConfig;

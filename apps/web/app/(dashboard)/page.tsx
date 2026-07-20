@@ -3,51 +3,65 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  BUCKET_SHAPE,
-  BUCKET_TIMES,
   DAYS,
   INTENT_ROWS,
   MENTIONS,
-  PULSE_COLORS,
-  PULSE_DOMINANT,
+  PULSE_BUCKETS,
+  SENTIMENT_COLOR,
   TOP_POSTS,
+  WEEK_RANGE_LABEL,
+  WEEK_STATS,
   dayTotal,
 } from "@/lib/demo-data";
 import { MentionCard } from "@/components/mention-card";
 
 const CHART_H = 172;
-const LIVE_BUCKET = 26;
+
+const arrow = (delta: number): string => (delta >= 0 ? "▲" : "▼");
 
 export default function OverviewPage() {
   const router = useRouter();
   const maxDay = Math.max(...DAYS.map(dayTotal));
-  const totals = DAYS.reduce((a, d) => ({ t: a.t + dayTotal(d), n: a.n + d.neg }), { t: 0, n: 0 });
 
   const statCards = [
-    { label: "Mentions", value: String(totals.t), delta: "▲ 18% vs prior 7 days", deltaColor: "var(--color-pos)", tip: "" },
-    { label: "Negative share", value: `${Math.round((totals.n / totals.t) * 100)}%`, delta: "▲ 3 pts vs prior 7 days", deltaColor: "var(--color-neg)", tip: "" },
-    { label: "Purchase intent", value: "12", delta: "▲ 5 vs prior 7 days", deltaColor: "var(--color-pos)", tip: "" },
+    {
+      label: "Mentions",
+      value: String(WEEK_STATS.mentions),
+      delta: `${arrow(WEEK_STATS.mentionsDeltaPct)} ${Math.abs(WEEK_STATS.mentionsDeltaPct)}% vs prior 7 days`,
+      deltaColor: WEEK_STATS.mentionsDeltaPct >= 0 ? "var(--color-pos)" : "var(--color-neg)",
+      tip: "",
+    },
+    {
+      label: "Negative share",
+      value: `${WEEK_STATS.negativeSharePct}%`,
+      delta: `${arrow(WEEK_STATS.negativeShareDeltaPts)} ${Math.abs(WEEK_STATS.negativeShareDeltaPts)} pts vs prior 7 days`,
+      deltaColor: WEEK_STATS.negativeShareDeltaPts > 0 ? "var(--color-neg)" : "var(--color-pos)",
+      tip: "",
+    },
+    {
+      label: "Purchase intent",
+      value: String(WEEK_STATS.purchaseIntent),
+      delta: `${arrow(WEEK_STATS.purchaseIntentDelta)} ${Math.abs(WEEK_STATS.purchaseIntentDelta)} vs prior 7 days`,
+      deltaColor: WEEK_STATS.purchaseIntentDelta >= 0 ? "var(--color-pos)" : "var(--color-neg)",
+      tip: "",
+    },
     { label: "Avg response gap", value: "—", delta: "Coming soon", deltaColor: "var(--color-ink3)", tip: "Response time tracking arrives in v2" },
   ];
 
-  const buckets = DAYS.flatMap((d, di) => {
-    const total = dayTotal(d);
-    return BUCKET_SHAPE.map((share, bi) => {
-      const i = di * 4 + bi;
-      const isLive = i === LIVE_BUCKET;
-      const future = i > LIVE_BUCKET;
-      const v = future ? 0 : Math.round(total * share);
-      const h = Math.max(3, Math.round((v / (maxDay * 0.4)) * 56));
-      const dominant = PULSE_DOMINANT[i] ?? "pos";
-      return {
-        key: `${d.label}-${bi}`,
-        tip: `${d.label} ${BUCKET_TIMES[bi]} · ${v} mentions`,
-        height: future ? 2 : h,
-        color: future ? "var(--color-surface2)" : isLive ? "var(--color-accent)" : PULSE_COLORS[dominant],
-        isLive,
-      };
-    });
-  });
+  const maxBucket = Math.max(1, ...PULSE_BUCKETS.map((b) => b.count));
+  const buckets = PULSE_BUCKETS.map((b) => ({
+    key: b.key,
+    tip: `${b.dayLabel} ${b.timeLabel} · ${b.count} mentions`,
+    height: b.isFuture ? 2 : Math.max(3, Math.round((b.count / maxBucket) * 52)),
+    color: b.isFuture
+      ? "var(--color-surface2)"
+      : b.isLive
+        ? "var(--color-accent)"
+        : b.dominant === null
+          ? "var(--color-surface2)"
+          : SENTIMENT_COLOR[b.dominant],
+    isLive: b.isLive,
+  }));
 
   const maxIntent = Math.max(...INTENT_ROWS.map((i) => i.count));
   const attention = MENTIONS.filter((m) => m.sentiment === "negative" || m.intent === "complaint").slice(0, 5);
@@ -65,7 +79,7 @@ export default function OverviewPage() {
       <div className="rounded-card border border-line bg-surface p-5">
         <div className="mb-3.5 flex items-baseline justify-between">
           <div className="text-[11px] tracking-[0.08em] text-ink3 uppercase">Pulse · 6h buckets</div>
-          <div className="font-mono text-[11px] text-ink3">Jul 13 – Jul 19</div>
+          <div className="font-mono text-[11px] text-ink3">{WEEK_RANGE_LABEL}</div>
         </div>
         <div className="flex h-14 items-end gap-[3px] border-b border-line">
           {buckets.map((b) => (
