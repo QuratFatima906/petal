@@ -1,0 +1,29 @@
+{
+  "name": "@petal/db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "generate": "drizzle-kit generate"
+  },
+  "dependencies": {
+    "@petal/core": "workspace:*",
+    "drizzle-orm": "^0.44.2",
+    "postgres": "^3.4.5",
+    "ulid": "^3.0.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@petal/fixtures": "workspace:*",
+    "@types/node": "^22",
+    "drizzle-kit": "^0.31.4",
+    "typescript": "^5",
+    "vitest": "^4.1.10"
+  }
+}
