@@ -12,8 +12,11 @@
   },
   "dependencies": {
     "@petal/core": "workspace:*",
+    "@petal/db": "workspace:*",
     "@petal/fixtures": "workspace:*",
+    "@tanstack/react-query": "^5.66.0",
     "bullmq": "^5.80.9",
+    "drizzle-orm": "^0.44.2",
     "next": "16.2.10",
     "pino": "^10.3.1",
     "react": "19.2.4",
@@ -25,6 +28,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "postgres": "^3.4.5",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.10"

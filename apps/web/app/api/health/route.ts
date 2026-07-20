@@ -1,18 +1,32 @@
+import { healthResponseSchema } from "@petal/core";
+import { sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import pkg from "../../../package.json";
+import { getDb } from "../../../lib/db";
+import { checkHealth, type HealthReport } from "../../../lib/health";
+import { getQueueDepths, pingRedis } from "../../../lib/queues";
+import { tryLoadServerEnv } from "../../../lib/server-env";
 
-// Evaluated per request so DEMO_MODE reflects the runtime environment, not the build.
+// Evaluated per request; probes Postgres + Redis, so never cached.
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// WP10-lite liveness probe. The full health contract from plan section 7
-// (`db: boolean; redis: boolean; queueDepths: Record<string, number>`) arrives
-// with WP7, once Postgres, Redis and the BullMQ queues are wired in.
-export function GET(): NextResponse {
-  return NextResponse.json({
-    data: {
-      status: "ok",
-      version: pkg.version,
-      demoMode: process.env.DEMO_MODE === "true",
-    },
-  });
+/**
+ * Health contract (plan §7): `{ db, redis, queueDepths }`. A down dependency
+ * is reported as a boolean / `{}`, never a 500 — the endpoint must answer even
+ * when Postgres or Redis is unreachable.
+ */
+export async function GET(): Promise<NextResponse> {
+  const env = tryLoadServerEnv();
+  const report: HealthReport =
+    env === null
+      ? { db: false, redis: false, queueDepths: {} }
+      : await checkHealth({
+          pingDb: async () => {
+            await getDb(env.DATABASE_URL).execute(sql`select 1`);
+            return true;
+          },
+          pingRedis: () => pingRedis(env.REDIS_URL),
+          queueDepths: () => getQueueDepths(env.REDIS_URL),
+        });
+  return NextResponse.json(healthResponseSchema.parse({ data: report }));
 }
