@@ -1,28 +1,19 @@
-/** Demo dataset and domain unions, ported verbatim from the approved mockup (docs/design/petal-dashboard.dc.html). */
+/**
+ * Demo data for the dashboard, derived from the shared @petal/fixtures
+ * dataset (80 mention events) instead of the old hand-written inline set.
+ * The fixtures carry raw events only, so this module supplies the
+ * deterministic demo enrichment (sentiment/intent/confidence/method) that
+ * the WP6 enrichment worker will later produce for real, and computes every
+ * aggregate the screens show. The clock is fixed (plan §5.9: time is
+ * injected) so the rendered UI and the e2e assertions stay stable.
+ */
 
-export type Sentiment = "positive" | "negative" | "neutral" | "mixed";
-export type Intent = "complaint" | "praise" | "question" | "purchase_intent" | "spam" | "other";
-export type Source = "own_comment" | "caption_mention" | "comment_mention" | "hashtag_media";
-export type EnrichMethod = "llm" | "lexicon";
+import type { EnrichMethod, Intent, MentionEvent, MentionSource, Sentiment } from "@petal/core";
+import { OWNED_MEDIA_CAPTIONS, buildFixtureEvents } from "@petal/fixtures";
 
-export type MediaRef = {
-  readonly caption: string;
-  readonly posted: string;
-};
-
-export type Mention = {
-  readonly id: string;
-  readonly username: string;
-  readonly source: Source;
-  readonly when: string;
-  readonly ts: string;
-  readonly text: string;
-  readonly sentiment: Sentiment;
-  readonly intent: Intent;
-  readonly confidence: number;
-  readonly method: EnrichMethod;
-  readonly media: MediaRef | null;
-};
+export type { EnrichMethod, Intent, Sentiment } from "@petal/core";
+/** Alias kept from the inline-dataset days; components import `Source`. */
+export type Source = MentionSource;
 
 export const SENTIMENTS = ["positive", "negative", "neutral", "mixed"] as const;
 export const INTENTS = ["complaint", "praise", "question", "purchase_intent", "spam", "other"] as const;
@@ -50,22 +41,237 @@ export const SOURCE_LABEL: Record<Source, string> = {
   hashtag_media: "Hashtag post",
 };
 
-export const MENTIONS: readonly Mention[] = [
-  { id: "m1", username: "@lena.codes", source: "own_comment", when: "12m ago", ts: "2026-07-19 14:32", text: "Love that everything stays on my device. No account, no cloud, exactly how it should be.", sentiment: "positive", intent: "praise", confidence: 0.96, method: "llm", media: { caption: "Local-only by design: how Omahi keeps your data yours", posted: "Jul 14" } },
-  { id: "m2", username: "@maya_reads", source: "own_comment", when: "2h ago", ts: "2026-07-19 12:18", text: "The phase seems off by a day for me. Logged my start date twice and it still shows follicular.", sentiment: "negative", intent: "complaint", confidence: 0.93, method: "llm", media: { caption: "Phase colors, explained", posted: "Jul 16" } },
-  { id: "m3", username: "@tabfresh", source: "own_comment", when: "3h ago", ts: "2026-07-19 11:05", text: "Does this sync across devices or is it per browser?", sentiment: "neutral", intent: "question", confidence: 0.91, method: "llm", media: { caption: "Meet Omahi — your cycle, on every new tab.", posted: "Jul 12" } },
-  { id: "m4", username: "@salikaz", source: "comment_mention", when: "5h ago", ts: "2026-07-19 09:44", text: "@omahi.app my phase card disappeared after the last update. Reinstalled twice already.", sentiment: "negative", intent: "complaint", confidence: 0.95, method: "llm", media: null },
-  { id: "m5", username: "@noorulain_x", source: "caption_mention", when: "6h ago", ts: "2026-07-19 08:21", text: "Okay where do I get this?? My new tab has been a wasteland forever. @omahi.app", sentiment: "positive", intent: "purchase_intent", confidence: 0.89, method: "llm", media: null },
-  { id: "m6", username: "@privacywonk", source: "caption_mention", when: "9h ago", ts: "2026-07-19 05:37", text: "Skeptical of any cycle app tbh, but @omahi.app being local-only is a good start. Watching.", sentiment: "mixed", intent: "other", confidence: 0.72, method: "llm", media: null },
-  { id: "m7", username: "Public post", source: "hashtag_media", when: "11h ago", ts: "2026-07-19 03:12", text: "New tab, but make it useful. #omahi #cycletracking", sentiment: "positive", intent: "praise", confidence: 0.88, method: "llm", media: null },
-  { id: "m8", username: "@firefoxfaithful", source: "own_comment", when: "14h ago", ts: "2026-07-19 00:08", text: "Any plans for Firefox support? Would install today.", sentiment: "neutral", intent: "question", confidence: 0.94, method: "llm", media: { caption: "Meet Omahi — your cycle, on every new tab.", posted: "Jul 12" } },
-  { id: "m9", username: "@gadgetgrrl", source: "own_comment", when: "16h ago", ts: "2026-07-18 22:40", text: "Gorgeous design, but I wish the phase card was smaller. It takes over the whole tab.", sentiment: "mixed", intent: "other", confidence: 0.81, method: "llm", media: { caption: "Phase colors, explained", posted: "Jul 16" } },
-  { id: "m10", username: "@growthhacks365", source: "comment_mention", when: "18h ago", ts: "2026-07-18 20:15", text: "We help extensions 10x their installs. Check my profile for a free audit.", sentiment: "neutral", intent: "spam", confidence: 0.64, method: "lexicon", media: null },
-  { id: "m11", username: "@devdaisy", source: "own_comment", when: "1d ago", ts: "2026-07-18 13:02", text: "Is my data actually private? What happens to it when I uninstall?", sentiment: "neutral", intent: "question", confidence: 0.9, method: "llm", media: { caption: "Local-only by design: how Omahi keeps your data yours", posted: "Jul 14" } },
-  { id: "m12", username: "@minimal_tabs", source: "hashtag_media", when: "1d ago", ts: "2026-07-18 09:30", text: "Day 3 with #omahi and I actually know what phase I'm in without opening an app.", sentiment: "positive", intent: "praise", confidence: 0.77, method: "llm", media: null },
-  { id: "m13", username: "@cyclesyncedlife", source: "own_comment", when: "2d ago", ts: "2026-07-17 17:55", text: "Just installed, obsessed. First tracker that doesn't feel creepy.", sentiment: "positive", intent: "praise", confidence: 0.9, method: "llm", media: { caption: "Meet Omahi — your cycle, on every new tab.", posted: "Jul 12" } },
-  { id: "m14", username: "@sarcastic_sam", source: "caption_mention", when: "2d ago", ts: "2026-07-17 10:11", text: "Oh great, another extension that knows my body better than my doctor. (It's actually fine — @omahi.app keeps it all local, I checked.)", sentiment: "mixed", intent: "other", confidence: 0.84, method: "llm", media: null },
+/** Fixed demo clock: Sunday 2026-07-19 14:44 PKT — the mockup's Jul 13 – Jul 19 week. */
+export const DEMO_NOW = new Date("2026-07-19T14:44:00+05:00");
+
+const HOUR_MS = 3_600_000;
+const DAY_MS = 24 * HOUR_MS;
+/** All display and bucketing happens in Pakistan time, like the mockup. */
+const PKT_OFFSET_MS = 5 * HOUR_MS;
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] as const;
+
+const pad2 = (n: number): string => String(n).padStart(2, "0");
+
+const inPkt = (t: number): Date => new Date(t + PKT_OFFSET_MS);
+
+const fmtMonthDay = (t: number): string => {
+  const d = inPkt(t);
+  return `${MONTHS[d.getUTCMonth()] ?? ""} ${d.getUTCDate()}`;
+};
+
+const fmtTimestamp = (t: number): string => {
+  const d = inPkt(t);
+  return `${d.getUTCFullYear()}-${pad2(d.getUTCMonth() + 1)}-${pad2(d.getUTCDate())} ${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}`;
+};
+
+const relativeLabel = (t: number): string => {
+  const mins = Math.max(1, Math.round((DEMO_NOW.getTime() - t) / 60_000));
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
+};
+
+type DemoEnrichment = {
+  readonly sentiment: Sentiment;
+  readonly intent: Intent;
+  readonly confidence: number;
+  readonly method: EnrichMethod;
+};
+
+/**
+ * One row per fixture event, in dataset order: [expected author, sentiment,
+ * intent, confidence, method?]. The author column is verified against the
+ * fixtures at module load so a reordered or extended dataset fails loudly
+ * instead of silently misclassifying.
+ */
+type EnrichmentRow = readonly [string | null, Sentiment, Intent, number, EnrichMethod?];
+
+const ENRICHMENT_ROWS: readonly EnrichmentRow[] = [
+  ["lena.codes", "positive", "praise", 0.96],
+  ["cyclesyncedlife", "positive", "praise", 0.9],
+  ["minimal_tabs", "positive", "praise", 0.77],
+  ["newtab_nerd", "positive", "praise", 0.88],
+  ["sana.builds", "positive", "praise", 0.92],
+  ["quietsoftware", "positive", "praise", 0.91],
+  ["tabgarden", "positive", "praise", 0.86],
+  ["roshni_dev", "positive", "praise", 0.93],
+  ["ovulation_nation", "positive", "praise", 0.9],
+  ["browsertweaks", "positive", "praise", 0.89],
+  ["girlwhocodes_", "positive", "praise", 0.94],
+  ["softwaregardener", "positive", "praise", 0.92],
+  ["lowtechlife", "positive", "praise", 0.88],
+  ["amna.reads", "positive", "praise", 0.85],
+  ["pixel_priya", "positive", "praise", 0.82],
+  ["steadyhabits", "positive", "praise", 0.91],
+  ["casual_carrie", "positive", "praise", 0.84],
+  ["thebrowsergal", "positive", "praise", 0.87],
+  ["tabfresh", "neutral", "question", 0.91],
+  ["devdaisy", "neutral", "question", 0.9],
+  ["curious_cat22", "neutral", "question", 0.89],
+  ["healthnerd_hs", "neutral", "question", 0.92],
+  ["spreadsheet_sam", "neutral", "question", 0.87],
+  ["modest_muser", "neutral", "question", 0.88],
+  ["nightowl_nadia", "neutral", "question", 0.86],
+  ["privacy_prof", "neutral", "question", 0.93],
+  ["new_here_nina", "neutral", "question", 0.9],
+  ["skeptical_sister", "neutral", "question", 0.85],
+  ["genuinely_asking", "neutral", "question", 0.83],
+  ["firefoxfaithful", "neutral", "question", 0.94],
+  ["gadgetgrrl", "mixed", "other", 0.81],
+  ["safari_sailor", "neutral", "question", 0.89],
+  ["widget_wisher", "neutral", "other", 0.78],
+  ["notify_me_pls", "neutral", "other", 0.8],
+  ["mobile_mona", "mixed", "other", 0.76],
+  ["partner_pete", "neutral", "question", 0.84],
+  ["noorulain_x", "positive", "purchase_intent", 0.89],
+  ["impulse_installer", "positive", "purchase_intent", 0.95],
+  ["tab_collector", "positive", "purchase_intent", 0.87],
+  ["hana.switches", "positive", "purchase_intent", 0.9],
+  ["linkplease_lena", "positive", "purchase_intent", 0.92],
+  ["weekend_wanda", "positive", "purchase_intent", 0.81],
+  ["maya_reads", "negative", "complaint", 0.93],
+  ["salikaz", "negative", "complaint", 0.95],
+  ["grumpy_gwen", "negative", "complaint", 0.84],
+  ["syncless_in_seattle", "negative", "complaint", 0.9],
+  ["detail_dana", "negative", "complaint", 0.88],
+  ["quietly_annoyed", "negative", "complaint", 0.86],
+  ["privacywonk", "mixed", "other", 0.72],
+  ["datadoubter", "mixed", "other", 0.7],
+  ["burned_before", "mixed", "question", 0.74],
+  ["vpn_vera", "positive", "praise", 0.9],
+  ["growthhacks365", "neutral", "spam", 0.64, "lexicon"],
+  ["crypto_queen_x", "neutral", "spam", 0.71, "lexicon"],
+  ["followers4cheap", "neutral", "spam", 0.68, "lexicon"],
+  ["dropship_dan", "neutral", "spam", 0.62, "lexicon"],
+  ["sarcastic_sam", "mixed", "other", 0.84],
+  ["deadpan_dee", "mixed", "other", 0.79],
+  ["eyeroll_emma", "mixed", "other", 0.77],
+  ["mahnoor.k", "positive", "praise", 0.9],
+  ["fatima_codes", "neutral", "question", 0.88],
+  ["areeba.z", "negative", "complaint", 0.87],
+  ["hira_designs", "positive", "praise", 0.91],
+  ["zoya_skeptic", "mixed", "question", 0.75],
+  ["laiba.installs", "neutral", "other", 0.73],
+  ["ammi_ki_beti", "neutral", "question", 0.89],
+  ["mashal.m", "positive", "praise", 0.92],
+  ["sehar_speaks", "positive", "praise", 0.86],
+  ["irregular_iqra", "neutral", "question", 0.87],
+  ["raat_ki_rani", "neutral", "question", 0.9],
+  ["do_computer", "negative", "complaint", 0.85],
+  ["savings_sana", "neutral", "question", 0.82],
+  ["edge_ki_awaz", "negative", "complaint", 0.8],
+  ["teesra_din", "positive", "praise", 0.88],
+  ["khud_check_kiya", "positive", "praise", 0.83],
+  ["tea_and_tabs", "positive", "praise", 0.81],
+  ["unfollowed_apps", "positive", "praise", 0.93],
+  ["notes_by_noor", "neutral", "question", 0.86],
+  ["graceful_exit", "mixed", "other", 0.82],
+  [null, "positive", "praise", 0.88],
 ];
+
+const EVENTS: readonly MentionEvent[] = buildFixtureEvents(DEMO_NOW);
+
+if (EVENTS.length !== ENRICHMENT_ROWS.length) {
+  throw new Error(`Demo enrichment covers ${ENRICHMENT_ROWS.length} events but fixtures provide ${EVENTS.length}`);
+}
+
+const enrichmentFor = (event: MentionEvent, index: number): DemoEnrichment => {
+  const row = ENRICHMENT_ROWS[index];
+  if (!row || row[0] !== event.authorUsername) {
+    throw new Error(`Demo enrichment out of sync with @petal/fixtures at index ${index} (${event.authorUsername ?? "null"})`);
+  }
+  return { sentiment: row[1], intent: row[2], confidence: row[3], method: row[4] ?? "llm" };
+};
+
+type EnrichedEvent = {
+  readonly event: MentionEvent;
+  readonly enrichment: DemoEnrichment;
+  /** occurredAt as epoch ms, precomputed for windowing */
+  readonly at: number;
+};
+
+const ENRICHED: readonly EnrichedEvent[] = EVENTS.map((event, i) => ({
+  event,
+  enrichment: enrichmentFor(event, i),
+  at: new Date(event.occurredAt).getTime(),
+}));
+
+/** Owned post "posted" dates: a day before the earliest mention on that post. */
+const MEDIA_POSTED = new Map<string, number>();
+for (const { event, at } of ENRICHED) {
+  if (event.mediaId !== null) {
+    const prev = MEDIA_POSTED.get(event.mediaId);
+    if (prev === undefined || at < prev) MEDIA_POSTED.set(event.mediaId, at);
+  }
+}
+
+const mediaCaption = (mediaId: string): string => {
+  const caption = OWNED_MEDIA_CAPTIONS[Number(mediaId.replace("media-", ""))];
+  if (caption === undefined) throw new Error(`Unknown fixture media id: ${mediaId}`);
+  return caption;
+};
+
+const mediaPostedLabel = (mediaId: string): string => {
+  const earliest = MEDIA_POSTED.get(mediaId);
+  if (earliest === undefined) throw new Error(`Unknown fixture media id: ${mediaId}`);
+  return fmtMonthDay(earliest - DAY_MS);
+};
+
+export type MediaRef = {
+  readonly caption: string;
+  readonly posted: string;
+};
+
+export type Mention = {
+  readonly id: string;
+  readonly username: string;
+  readonly source: Source;
+  readonly when: string;
+  readonly ts: string;
+  readonly text: string;
+  readonly sentiment: Sentiment;
+  readonly intent: Intent;
+  readonly confidence: number;
+  readonly method: EnrichMethod;
+  readonly media: MediaRef | null;
+};
+
+export const MENTIONS: readonly Mention[] = [...ENRICHED]
+  .sort((a, b) => b.at - a.at)
+  .map(({ event, enrichment, at }) => ({
+    id: event.id,
+    username: event.authorUsername === null ? "Public post" : `@${event.authorUsername}`,
+    source: event.source,
+    when: relativeLabel(at),
+    ts: fmtTimestamp(at),
+    text: event.text,
+    sentiment: enrichment.sentiment,
+    intent: enrichment.intent,
+    confidence: enrichment.confidence,
+    method: enrichment.method,
+    media: event.mediaId === null ? null : { caption: mediaCaption(event.mediaId), posted: mediaPostedLabel(event.mediaId) },
+  }));
+
+/** Start of the current Mon–Sun week (00:00 Monday, PKT), as a UTC instant. */
+const startOfPktDay = DEMO_NOW.getTime() - ((DEMO_NOW.getTime() + PKT_OFFSET_MS) % DAY_MS);
+const daysSinceMonday = (inPkt(DEMO_NOW.getTime()).getUTCDay() + 6) % 7;
+const WEEK_START = startOfPktDay - daysSinceMonday * DAY_MS;
+
+export const WEEK_RANGE_LABEL = `${fmtMonthDay(WEEK_START)} – ${fmtMonthDay(WEEK_START + 6 * DAY_MS)}`;
+
+const inWindow = (from: number, to: number): readonly EnrichedEvent[] => ENRICHED.filter((x) => x.at >= from && x.at < to);
+
+const WEEK = inWindow(WEEK_START, DEMO_NOW.getTime() + 1);
+const PRIOR_WEEK = inWindow(WEEK_START - 7 * DAY_MS, WEEK_START);
+
+const countBy = <K extends string>(items: readonly EnrichedEvent[], keys: readonly K[], key: (x: EnrichedEvent) => K): Record<K, number> => {
+  const counts = Object.fromEntries(keys.map((k) => [k, 0])) as Record<K, number>;
+  for (const item of items) counts[key(item)] += 1;
+  return counts;
+};
+
+const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 
 export type DayAggregate = {
   readonly label: string;
@@ -75,17 +281,38 @@ export type DayAggregate = {
   readonly neg: number;
 };
 
-export const DAYS: readonly DayAggregate[] = [
-  { label: "Mon", pos: 18, neu: 12, mix: 3, neg: 5 },
-  { label: "Tue", pos: 22, neu: 15, mix: 4, neg: 6 },
-  { label: "Wed", pos: 16, neu: 10, mix: 2, neg: 4 },
-  { label: "Thu", pos: 27, neu: 14, mix: 5, neg: 9 },
-  { label: "Fri", pos: 34, neu: 18, mix: 4, neg: 12 },
-  { label: "Sat", pos: 25, neu: 13, mix: 3, neg: 7 },
-  { label: "Sun", pos: 12, neu: 6, mix: 1, neg: 3 },
-];
+export const DAYS: readonly DayAggregate[] = DAY_LABELS.map((label, i) => {
+  const day = inWindow(WEEK_START + i * DAY_MS, WEEK_START + (i + 1) * DAY_MS);
+  const c = countBy(day, SENTIMENTS, (x) => x.enrichment.sentiment);
+  return { label, pos: c.positive, neu: c.neutral, mix: c.mixed, neg: c.negative };
+});
 
 export const dayTotal = (d: DayAggregate): number => d.pos + d.neu + d.mix + d.neg;
+
+const negativeSharePct = (items: readonly EnrichedEvent[]): number =>
+  items.length === 0 ? 0 : (items.filter((x) => x.enrichment.sentiment === "negative").length / items.length) * 100;
+
+const purchaseIntentCount = (items: readonly EnrichedEvent[]): number =>
+  items.filter((x) => x.enrichment.intent === "purchase_intent").length;
+
+export type WeekStats = {
+  readonly mentions: number;
+  readonly negativeSharePct: number;
+  readonly purchaseIntent: number;
+  /** vs the prior Mon–Sun week, all from the same dataset */
+  readonly mentionsDeltaPct: number;
+  readonly negativeShareDeltaPts: number;
+  readonly purchaseIntentDelta: number;
+};
+
+export const WEEK_STATS: WeekStats = {
+  mentions: WEEK.length,
+  negativeSharePct: Math.round(negativeSharePct(WEEK)),
+  purchaseIntent: purchaseIntentCount(WEEK),
+  mentionsDeltaPct: PRIOR_WEEK.length === 0 ? 0 : Math.round(((WEEK.length - PRIOR_WEEK.length) / PRIOR_WEEK.length) * 100),
+  negativeShareDeltaPts: Math.round(negativeSharePct(WEEK) - negativeSharePct(PRIOR_WEEK)),
+  purchaseIntentDelta: purchaseIntentCount(WEEK) - purchaseIntentCount(PRIOR_WEEK),
+};
 
 export type IntentRow = {
   readonly label: string;
@@ -93,14 +320,20 @@ export type IntentRow = {
   readonly color: string;
 };
 
-export const INTENT_ROWS: readonly IntentRow[] = [
-  { label: "Praise", count: 118, color: "var(--color-pos)" },
-  { label: "Question", count: 64, color: "var(--color-neu)" },
-  { label: "Complaint", count: 41, color: "var(--color-neg)" },
-  { label: "Purchase intent", count: 12, color: "var(--color-accent)" },
-  { label: "Spam", count: 17, color: "var(--color-ink3)" },
-  { label: "Other", count: 38, color: "var(--color-mix)" },
+const INTENT_ROW_ORDER: readonly { intent: Intent; label: string; color: string }[] = [
+  { intent: "praise", label: "Praise", color: "var(--color-pos)" },
+  { intent: "question", label: "Question", color: "var(--color-neu)" },
+  { intent: "complaint", label: "Complaint", color: "var(--color-neg)" },
+  { intent: "purchase_intent", label: "Purchase intent", color: "var(--color-accent)" },
+  { intent: "spam", label: "Spam", color: "var(--color-ink3)" },
+  { intent: "other", label: "Other", color: "var(--color-mix)" },
 ];
+
+export const INTENT_ROWS: readonly IntentRow[] = INTENT_ROW_ORDER.map(({ intent, label, color }) => ({
+  label,
+  color,
+  count: WEEK.filter((x) => x.enrichment.intent === intent).length,
+}));
 
 export type TopPost = {
   readonly caption: string;
@@ -108,11 +341,48 @@ export type TopPost = {
   readonly mentions: number;
 };
 
-export const TOP_POSTS: readonly TopPost[] = [
-  { caption: "Meet Omahi — your cycle, on every new tab.", posted: "Jul 12", mentions: 64 },
-  { caption: "Local-only by design: how Omahi keeps your data yours", posted: "Jul 14", mentions: 31 },
-  { caption: "Phase colors, explained", posted: "Jul 16", mentions: 22 },
-];
+const weekMediaCounts = new Map<string, number>();
+for (const { event } of WEEK) {
+  if (event.mediaId !== null) weekMediaCounts.set(event.mediaId, (weekMediaCounts.get(event.mediaId) ?? 0) + 1);
+}
+
+export const TOP_POSTS: readonly TopPost[] = [...weekMediaCounts.entries()]
+  .sort(([idA, a], [idB, b]) => b - a || idA.localeCompare(idB))
+  .slice(0, 3)
+  .map(([mediaId, count]) => ({ caption: mediaCaption(mediaId), posted: mediaPostedLabel(mediaId), mentions: count }));
+
+export const BUCKET_TIMES = ["00–06", "06–12", "12–18", "18–24"] as const;
+
+export type PulseBucket = {
+  readonly key: string;
+  readonly dayLabel: string;
+  readonly timeLabel: string;
+  readonly count: number;
+  /** null when the bucket has no mentions */
+  readonly dominant: Sentiment | null;
+  readonly isLive: boolean;
+  readonly isFuture: boolean;
+};
+
+/** 28 pulse buckets: 7 days × four 6h slots, counted from the dataset. */
+export const PULSE_BUCKETS: readonly PulseBucket[] = Array.from({ length: 28 }, (_, i) => {
+  const start = WEEK_START + Math.floor(i / 4) * DAY_MS + (i % 4) * 6 * HOUR_MS;
+  const items = inWindow(start, start + 6 * HOUR_MS);
+  const counts = countBy(items, SENTIMENTS, (x) => x.enrichment.sentiment);
+  let dominant: Sentiment | null = null;
+  for (const s of SENTIMENTS) {
+    if (counts[s] > (dominant === null ? 0 : counts[dominant])) dominant = s;
+  }
+  return {
+    key: `${DAY_LABELS[Math.floor(i / 4)] ?? ""}-${i % 4}`,
+    dayLabel: DAY_LABELS[Math.floor(i / 4)] ?? "",
+    timeLabel: BUCKET_TIMES[i % 4] ?? "",
+    count: items.length,
+    dominant,
+    isLive: DEMO_NOW.getTime() >= start && DEMO_NOW.getTime() < start + 6 * HOUR_MS,
+    isFuture: start > DEMO_NOW.getTime(),
+  };
+});
 
 export type Hashtag = {
   readonly name: string;
@@ -121,11 +391,15 @@ export type Hashtag = {
   readonly polled: string;
 };
 
+/** 7-day post volume per tracked tag, counted from hashtag_media fixtures. */
+const tagPosts = (name: string): number =>
+  WEEK.filter((x) => x.event.source === "hashtag_media" && x.event.text.toLowerCase().includes(`#${name}`)).length;
+
 export const INITIAL_TAGS: readonly Hashtag[] = [
-  { name: "omahi", active: true, posts: 34, polled: "20m ago" },
-  { name: "cycletracking", active: true, posts: 12, polled: "1h ago" },
-  { name: "newtabextension", active: false, posts: 0, polled: "2d ago" },
-  { name: "cyclesyncing", active: true, posts: 8, polled: "1h ago" },
+  { name: "omahi", active: true, posts: tagPosts("omahi"), polled: "20m ago" },
+  { name: "cycletracking", active: true, posts: tagPosts("cycletracking"), polled: "1h ago" },
+  { name: "newtabextension", active: false, posts: tagPosts("newtabextension"), polled: "2d ago" },
+  { name: "cyclesyncing", active: true, posts: tagPosts("cyclesyncing"), polled: "1h ago" },
 ];
 
 export type RuleParam = {
@@ -176,25 +450,9 @@ export type FiredAlert = {
   readonly filter: Sentiment | "all";
 };
 
+/** Alert history is demo flavor from the mockup — no alert fixtures exist yet (WP7). */
 export const FIRED_ALERTS: readonly FiredAlert[] = [
   { when: "Jul 16 · 09:40", rule: "Volume spike", summary: "118 mentions in 24h — 2.6× the 46/day average", delivered: true, filter: "all" },
   { when: "Jul 15 · 22:10", rule: "Negative share", summary: "34% negative across 41 mentions", delivered: true, filter: "negative" },
   { when: "Jul 12 · 08:20", rule: "Volume spike", summary: "96 mentions in 24h — 2.1× average", delivered: false, filter: "all" },
 ];
-
-/** Dominant-sentiment pattern for the 28 pulse buckets (7 days × 4), from the mockup. */
-export const PULSE_DOMINANT: readonly (keyof typeof PULSE_COLORS)[] = [
-  "neu", "pos", "pos", "neu", "pos", "neg", "pos", "neu", "pos", "pos", "neu", "pos", "pos", "neg",
-  "neg", "pos", "pos", "pos", "neg", "mix", "pos", "pos", "neu", "pos", "neu", "pos", "pos", "pos",
-];
-
-export const PULSE_COLORS = {
-  pos: "var(--color-pos)",
-  neu: "var(--color-neu)",
-  mix: "var(--color-mix)",
-  neg: "var(--color-neg)",
-} as const;
-
-/** Share of a day's volume falling into each 6h bucket, from the mockup. */
-export const BUCKET_SHAPE = [0.15, 0.35, 0.3, 0.2] as const;
-export const BUCKET_TIMES = ["00–06", "06–12", "12–18", "18–24"] as const;
