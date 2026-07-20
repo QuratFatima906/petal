@@ -1,0 +1,35 @@
+# Dependencies and build output (rebuilt inside the image)
+node_modules
+**/node_modules
+.next
+**/.next
+.turbo
+**/.turbo
+
+# VCS, docs, CI
+.git
+.github
+docs
+README.md
+
+# e2e suite is not part of the web image; keep its package.json so the
+# pnpm workspace lockfile stays consistent during --frozen-lockfile install.
+e2e/*
+!e2e/package.json
+
+# Test artifacts
+test-results
+**/test-results
+playwright-report
+**/playwright-report
+coverage
+**/coverage
+
+# Env and local files
+.env
+.env.*
+.DS_Store
+
+# Docker files themselves
+Dockerfile.web
+.dockerignore
