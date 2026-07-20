@@ -1,3 +1,4 @@
+
 # Progress
 
 WP0 2026-07-20 done — pnpm workspace + Next.js (App Router, Tailwind v4) scaffold, tsconfig.base.json per plan 5.1; turbo pipeline (`pnpm check` = typecheck+lint+test), typescript-eslint strict with plan 5.8 rules, Prettier, vitest wired, docker-compose (postgres:16 + redis:7), CI running check + e2e
