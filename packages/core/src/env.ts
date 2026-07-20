@@ -5,6 +5,13 @@ import { z } from "zod";
  * Fails fast with a readable list of missing/invalid keys.
  */
 
+/**
+ * aes-256-gcm key: 64 hex chars, or base64 decoding to exactly 32 bytes
+ * (43 base64 chars plus optional padding always decode to 32 bytes).
+ */
+const isTokenEncryptionKey = (value: string): boolean =>
+  /^[0-9a-fA-F]{64}$/.test(value) || /^[A-Za-z0-9+/]{43}=?$/.test(value);
+
 const envSchema = z.object({
   DATABASE_URL: z.string().min(1),
   REDIS_URL: z.string().min(1),
@@ -14,6 +21,12 @@ const envSchema = z.object({
   IG_ACCOUNT_ID: z.string().min(1).optional(),
   IG_WEBHOOK_VERIFY_TOKEN: z.string().min(1).optional(),
   ANTHROPIC_API_KEY: z.string().min(1).optional(),
+  TOKEN_ENCRYPTION_KEY: z
+    .string()
+    .refine(isTokenEncryptionKey, {
+      message: "must be 64 hex chars or base64 encoding exactly 32 bytes (aes-256-gcm key)",
+    })
+    .optional(),
   ENRICH_DAILY_BUDGET_USD: z.coerce.number().positive().default(2),
   SLACK_WEBHOOK_URL: z.url().optional(),
   DEMO_MODE: z

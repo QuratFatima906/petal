@@ -6,3 +6,4 @@ WP1 2026-07-20 done — @petal/core (zod schemas + inferred types for mention ev
 WP8 2026-07-20 done — all five dashboard screens + mention detail sheet + insights rails on inline demo data, matching docs/design/petal-dashboard.dc.html; Connect screen (S7), loading/empty/error states, and Playwright e2e (5 specs) in e2e/
 WP10 2026-07-20 partial — web deployable to Railway in demo mode (health route, Dockerfile.web, railway.json, runbook); worker/migrations/observability pending
 VERIFY 2026-07-20 done — Meta API research in docs/meta-api-verify.md; 5 items confirmed, 4 changed, 0 unverifiable
+CONTRACT 2026-07-21 done — sanctioned frozen-contract exception (handoff note): optional TOKEN_ENCRYPTION_KEY added to @petal/core env schema (64 hex chars or base64 of 32 bytes, aes-256-gcm key for stored Meta tokens), unit tests added, plan §8 env table updated
