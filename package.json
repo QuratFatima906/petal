@@ -1,13 +1,21 @@
 {
   "name": "petal",
   "private": true,
+  "packageManager": "pnpm@10.6.2",
   "scripts": {
     "dev": "pnpm --filter @petal/web dev",
     "build": "pnpm --filter @petal/web build",
-    "check": "pnpm -r --if-present typecheck && pnpm -r --if-present lint && pnpm -r --if-present test"
+    "check": "turbo run typecheck lint test",
+    "format": "prettier --write ."
   },
   "engines": {
     "node": ">=22",
     "pnpm": ">=9"
+  },
+  "devDependencies": {
+    "eslint": "^10.7.0",
+    "prettier": "^3.9.5",
+    "turbo": "^2.10.5",
+    "typescript-eslint": "^8.64.0"
   }
 }
