@@ -8,6 +8,10 @@
     },
     "typecheck": {},
     "lint": {},
-    "test": {}
+    "test": {},
+    "@petal/db#test": {
+      "env": ["PETAL_TEST_PG_URL"],
+      "cache": false
+    }
   }
 }
