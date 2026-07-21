@@ -1,0 +1,20 @@
+# Promptfoo config for the enrichment prompt (plan §9, §12).
+# Run: ANTHROPIC_API_KEY=sk-... npx promptfoo@latest eval -c promptfooconfig.yaml
+# Scores one text per call against the 120-item labeled set (src/eval/labels.ts).
+# Merge gate (plan §12): no accuracy regression greater than 2 points.
+description: Petal enrichment — sentiment + intent classification
+
+prompts:
+  - |
+    You classify a short Instagram comment or mention about a product.
+    Some texts are Roman Urdu or mixed Urdu-English; classify by meaning, not language.
+    Return ONLY minified JSON: {"sentiment": <one of positive|negative|neutral|mixed>, "intent": <one of complaint|praise|question|purchase_intent|spam|other>, "confidence": <0..1>}.
+
+    Text: {{text}}
+
+providers:
+  - id: anthropic:messages:claude-haiku-4-5
+    config:
+      max_tokens: 256
+
+tests: file://src/eval/promptfoo-tests.ts

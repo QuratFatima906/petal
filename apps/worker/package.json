@@ -11,6 +11,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@petal/ai": "workspace:*",
     "@petal/core": "workspace:*",
     "@petal/db": "workspace:*",
     "@petal/ig": "workspace:*",
