@@ -13,6 +13,7 @@ import {
   createQueues,
   registerSchedules,
 } from "./queues";
+import { createAggregateProcessor } from "./jobs/aggregate";
 import { createIngestProcessor } from "./jobs/ingest";
 import { pollHashtags, pollMentionsAndTags, pollOwnComments, type PollDeps } from "./jobs/poll";
 import { createDbPollStore, getActiveAccount } from "./store";
@@ -106,6 +107,18 @@ const ingestWorker = new Worker(
 
 const pollWorker = new Worker("poll", pollProcessor, { connection, concurrency: 1 });
 
+// Aggregate consumer (WP7): recompute the affected (account, UTC day) rollup.
+// Recompute-from-source is idempotent, so retries and the producer's per-day
+// debounce are both safe.
+const aggregateProcessor = createAggregateProcessor({ db, logger });
+const aggregateWorker = new Worker(
+  "aggregate",
+  async (job) => {
+    await aggregateProcessor({ id: job.id, data: job.data });
+  },
+  { connection, concurrency: 3 },
+);
+
 /** Jobs exhausting their attempts park in dead_letters (plan §6.1 / §13). */
 const parkOnFinalFailure =
   (queueName: string) =>
@@ -129,9 +142,10 @@ const parkOnFinalFailure =
 
 ingestWorker.on("failed", parkOnFinalFailure("ingest"));
 pollWorker.on("failed", parkOnFinalFailure("poll"));
+aggregateWorker.on("failed", parkOnFinalFailure("aggregate"));
 
 logger.info(
-  { queues: Object.keys(queues), consumers: ["ingest", "poll"] },
+  { queues: Object.keys(queues), consumers: ["ingest", "poll", "aggregate"] },
   "worker up — queues wired, schedules registered",
 );
 
@@ -140,7 +154,7 @@ const shutdown = async (signal: string): Promise<void> => {
   if (shuttingDown) return;
   shuttingDown = true;
   logger.info({ signal }, "shutting down");
-  await Promise.allSettled([ingestWorker.close(), pollWorker.close()]);
+  await Promise.allSettled([ingestWorker.close(), pollWorker.close(), aggregateWorker.close()]);
   await closeQueues(queues);
   await connection.quit().catch(() => undefined);
   await closeDb();
