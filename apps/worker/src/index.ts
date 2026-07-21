@@ -14,7 +14,14 @@ import {
   registerSchedules,
 } from "./queues";
 import { createAggregateProcessor } from "./jobs/aggregate";
+import { createAnthropicClassifier, createLexiconClassifier } from "@petal/ai";
 import { createIngestProcessor } from "./jobs/ingest";
+import {
+  AGGREGATE_JOB_NAME,
+  aggregateJobId,
+  createDbEnrichStore,
+  createEnrichProcessor,
+} from "./jobs/enrich";
 import { pollHashtags, pollMentionsAndTags, pollOwnComments, type PollDeps } from "./jobs/poll";
 import { createDbPollStore, getActiveAccount } from "./store";
 
@@ -108,8 +115,6 @@ const ingestWorker = new Worker(
 const pollWorker = new Worker("poll", pollProcessor, { connection, concurrency: 1 });
 
 // Aggregate consumer (WP7): recompute the affected (account, UTC day) rollup.
-// Recompute-from-source is idempotent, so retries and the producer's per-day
-// debounce are both safe.
 const aggregateProcessor = createAggregateProcessor({ db, logger });
 const aggregateWorker = new Worker(
   "aggregate",
@@ -117,6 +122,36 @@ const aggregateWorker = new Worker(
     await aggregateProcessor({ id: job.id, data: job.data });
   },
   { connection, concurrency: 3 },
+);
+
+// Enrich consumer (WP6): cache lookup → LLM structured output → write + cache,
+// with lexicon degradation. Uses the real Anthropic client when a key is
+// present and demo mode is off, else the offline lexicon scorer.
+const enrichClassifier =
+  env.ANTHROPIC_API_KEY !== undefined && !env.DEMO_MODE
+    ? createAnthropicClassifier({ apiKey: env.ANTHROPIC_API_KEY })
+    : createLexiconClassifier();
+const enrichProcessor = createEnrichProcessor({
+  store: createDbEnrichStore(db, systemClock),
+  logger,
+  classifier: enrichClassifier,
+  budgetUsd: env.ENRICH_DAILY_BUDGET_USD,
+  clock: systemClock,
+  enqueueAggregate: async (job) => {
+    await queues.aggregate.add(AGGREGATE_JOB_NAME, job, { jobId: aggregateJobId(job.accountId, job.date) });
+  },
+});
+const enrichWorker = new Worker(
+  "enrich",
+  async (job) => {
+    await enrichProcessor({
+      id: job.id,
+      data: job.data,
+      attemptsMade: job.attemptsMade,
+      maxAttempts: job.opts.attempts ?? ENRICH_JOB_OPTIONS.attempts,
+    });
+  },
+  { connection, concurrency: 5 },
 );
 
 /** Jobs exhausting their attempts park in dead_letters (plan §6.1 / §13). */
@@ -143,9 +178,10 @@ const parkOnFinalFailure =
 ingestWorker.on("failed", parkOnFinalFailure("ingest"));
 pollWorker.on("failed", parkOnFinalFailure("poll"));
 aggregateWorker.on("failed", parkOnFinalFailure("aggregate"));
+enrichWorker.on("failed", parkOnFinalFailure("enrich"));
 
 logger.info(
-  { queues: Object.keys(queues), consumers: ["ingest", "poll", "aggregate"] },
+  { queues: Object.keys(queues), consumers: ["ingest", "poll", "aggregate", "enrich"] },
   "worker up — queues wired, schedules registered",
 );
 
@@ -154,7 +190,12 @@ const shutdown = async (signal: string): Promise<void> => {
   if (shuttingDown) return;
   shuttingDown = true;
   logger.info({ signal }, "shutting down");
-  await Promise.allSettled([ingestWorker.close(), pollWorker.close(), aggregateWorker.close()]);
+  await Promise.allSettled([
+    ingestWorker.close(),
+    pollWorker.close(),
+    aggregateWorker.close(),
+    enrichWorker.close(),
+  ]);
   await closeQueues(queues);
   await connection.quit().catch(() => undefined);
   await closeDb();
