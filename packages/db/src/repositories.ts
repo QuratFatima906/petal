@@ -16,6 +16,7 @@ import { decodeCursor, encodeCursor } from "./cursor";
 import { decryptToken, encryptToken, type TokenEncryptionKey } from "./crypto";
 import {
   accounts,
+  alerts,
   dailyAggregates,
   deadLetters,
   enrichmentCache,
@@ -362,6 +363,28 @@ export async function recomputeDayAggregate(db: Db, accountId: string, date: str
   };
   await upsertDailyAggregate(db, agg);
   return agg;
+}
+
+// ---------- alerts ----------
+
+export type InsertAlertInput = {
+  readonly id: string;
+  readonly ruleId: string;
+  readonly firedAt: Date;
+  readonly summary: string;
+  readonly payload: Record<string, unknown>;
+  readonly deliveredSlack: boolean;
+};
+
+export async function insertAlert(db: Db, input: InsertAlertInput): Promise<void> {
+  await db.insert(alerts).values({
+    id: input.id,
+    ruleId: input.ruleId,
+    firedAt: input.firedAt,
+    summary: input.summary,
+    payload: input.payload,
+    deliveredSlack: input.deliveredSlack,
+  });
 }
 
 // ---------- dead letters ----------

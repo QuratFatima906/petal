@@ -22,14 +22,15 @@ import {
   createDbEnrichStore,
   createEnrichProcessor,
 } from "./jobs/enrich";
+import { createAlertProcessor } from "./jobs/alert";
+import { createRetentionProcessor } from "./jobs/retention";
 import { pollHashtags, pollMentionsAndTags, pollOwnComments, type PollDeps } from "./jobs/poll";
 import { createDbPollStore, getActiveAccount } from "./store";
+import { migrateDb } from "@petal/db";
 
 /**
- * Worker boot: wires all six queues and the §6.1 repeatable schedules, but
- * registers processors only for `ingest` and `poll`. The enrich, aggregate,
- * alert and retention consumers land in WP6/WP7/WP9 — their jobs queue up
- * untouched until then.
+ * Worker boot: wires all six queues, the §6.1 repeatable schedules, and all
+ * six processors — ingest, poll, enrich, aggregate, alert, and retention.
  */
 
 const env = loadEnv(process.env);
@@ -38,6 +39,9 @@ const { db, close: closeDb } = createDb(env.DATABASE_URL);
 const connection = new Redis(env.REDIS_URL, { maxRetriesPerRequest: null });
 const queues = createQueues(connection);
 await registerSchedules(queues);
+
+// Run pending migrations at boot (plan §10).
+await migrateDb(db);
 
 const asRecord = (value: unknown): Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value)
@@ -180,9 +184,35 @@ pollWorker.on("failed", parkOnFinalFailure("poll"));
 aggregateWorker.on("failed", parkOnFinalFailure("aggregate"));
 enrichWorker.on("failed", parkOnFinalFailure("enrich"));
 
+// Alert consumer (WP9): evaluate rules over aggregates, deliver to Slack.
+const alertProcessor = createAlertProcessor({
+  db,
+  logger,
+  clock: systemClock,
+  slackWebhookUrl: env.SLACK_WEBHOOK_URL,
+  httpPost: async (url, body) => {
+    const resp = await fetch(url, { method: "POST", body: JSON.stringify(body), headers: { "Content-Type": "application/json" } });
+    return { ok: resp.ok };
+  },
+});
+const alertWorker = new Worker("alert", async (job) => alertProcessor({ id: job.id, data: job.data }), {
+  connection,
+  concurrency: 1,
+});
+
+// Retention consumer (WP10): purge events past the retention window (plan §6.1).
+const retentionProcessor = createRetentionProcessor({ db, logger, retentionDays: env.RETENTION_DAYS, clock: systemClock });
+const retentionWorker = new Worker("retention", async (job) => retentionProcessor({ id: job.id, data: job.data }), {
+  connection,
+  concurrency: 1,
+});
+
+alertWorker.on("failed", parkOnFinalFailure("alert"));
+retentionWorker.on("failed", parkOnFinalFailure("retention"));
+
 logger.info(
-  { queues: Object.keys(queues), consumers: ["ingest", "poll", "aggregate", "enrich"] },
-  "worker up — queues wired, schedules registered",
+  { queues: Object.keys(queues), consumers: ["ingest", "poll", "aggregate", "enrich", "alert", "retention"] },
+  "worker up — all queues, consumers, and schedules registered",
 );
 
 let shuttingDown = false;
@@ -195,6 +225,8 @@ const shutdown = async (signal: string): Promise<void> => {
     pollWorker.close(),
     aggregateWorker.close(),
     enrichWorker.close(),
+    alertWorker.close(),
+    retentionWorker.close(),
   ]);
   await closeQueues(queues);
   await connection.quit().catch(() => undefined);
