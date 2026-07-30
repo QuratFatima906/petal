@@ -140,30 +140,7 @@ export default function AlertsPage() {
     }
   };
 
-  // Loading state
-  if (isLoading && !hasLiveData) {
-    return (
-      <div className="grid grid-cols-1 items-start gap-6 min-[1100px]:grid-cols-[minmax(0,1fr)_300px]">
-        <div className="flex min-w-0 flex-col gap-4">
-          <div className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
-            <div className="skeleton h-5 w-20 rounded" />
-            {[1, 2].map((i) => (
-              <div key={i} className="flex flex-col gap-3 border-t border-line py-3.5">
-                <div className="skeleton h-4 w-32 rounded" />
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="flex flex-col gap-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="skeleton h-[90px] rounded-card border border-line bg-surface" />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  // Error state (and no demo fallback — shouldn't happen since demo data is always there)
+  // Error state — should be rare since demo data is always there as fallback.
   if (isError && !displayRules.length) {
     return (
       <div className="py-16 text-center">
