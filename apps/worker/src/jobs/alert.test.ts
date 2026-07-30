@@ -92,7 +92,7 @@ function makeDeps(overrides?: Partial<AlertDeps>): AlertDeps {
     db: db as Db,
     logger: silentLogger,
     clock: () => NOW,
-    slackWebhookUrl: overrides?.slackWebhookUrl,
+    slackWebhookUrl: "https://hooks.slack.com/test",
     httpPost,
     ...overrides,
   };
@@ -120,21 +120,21 @@ describe.skipIf(testDb === null)("alert consumer", () => {
 
   it("skips evaluation when no active account exists", async () => {
     if (db === undefined) return;
-    // Create a disconnected account instead.
-    await db.execute(sql`truncate accounts, alert_rules, alerts, daily_aggregates cascade`);
-    await upsertAccount(db, {
-      id: "other_acct",
-      igUserId: "other",
-      username: "disconnected",
-      accessToken: null,
-      tokenExpiresAt: null,
-      connectedAt: NOW.toISOString(),
-      status: "disconnected",
-    });
+    // Set the existing account to disconnected so no active account exists.
+    await db
+      .update(schema.accounts)
+      .set({ status: "disconnected" })
+      .where(eq(schema.accounts.id, ACCOUNT_ID));
 
     const outcome = await createAlertProcessor(makeDeps())({ id: "j1", data: {} });
     expect(outcome.evaluatedCount).toBe(0);
     expect(outcome.firedCount).toBe(0);
+
+    // Restore it for subsequent tests.
+    await db
+      .update(schema.accounts)
+      .set({ status: "active" })
+      .where(eq(schema.accounts.id, ACCOUNT_ID));
   });
 
   it("skips evaluation when no enabled rules exist", async () => {
