@@ -89,7 +89,7 @@ export default function AlertsPage() {
     })),
   );
 
-  const { data: apiData, isLoading, isError } = useQuery({
+  const { data: apiData, isError } = useQuery({
     queryKey: ["alerts"],
     queryFn: fetchAlerts,
     refetchInterval: 30_000,
