@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FIRED_ALERTS, INITIAL_RULES, type AlertRule as DemoAlertRule } from "@/lib/demo-data";
 import { Toggle } from "@/components/toggle";
@@ -78,6 +78,17 @@ export default function AlertsPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
+  // Local state for demo-mode rules (no API to write to).
+  const [demoRules, setDemoRules] = useState<DisplayRule[]>(() =>
+    INITIAL_RULES.map((r: DemoAlertRule) => ({
+      id: r.id,
+      name: r.name,
+      desc: r.desc,
+      enabled: r.enabled,
+      params: r.params.map((p) => ({ k: p.k, label: p.label, v: p.v })),
+    })),
+  );
+
   const { data: apiData, isLoading, isError } = useQuery({
     queryKey: ["alerts"],
     queryFn: fetchAlerts,
@@ -102,14 +113,8 @@ export default function AlertsPage() {
   const hasLiveData = apiData !== undefined && apiData.rules.length > 0;
   const displayRules: DisplayRule[] = useMemo(() => {
     if (hasLiveData) return apiData.rules.map(apiRuleToDisplay);
-    return INITIAL_RULES.map((r: DemoAlertRule) => ({
-      id: r.id,
-      name: r.name,
-      desc: r.desc,
-      enabled: r.enabled,
-      params: r.params.map((p) => ({ k: p.k, label: p.label, v: p.v })),
-    }));
-  }, [apiData, hasLiveData]);
+    return demoRules;
+  }, [apiData, hasLiveData, demoRules]);
 
   const firedAlerts: typeof FIRED_ALERTS = useMemo(() => {
     if (hasLiveData)
@@ -125,15 +130,14 @@ export default function AlertsPage() {
   const activeRuleCount = displayRules.filter((r) => r.enabled).length;
 
   const setToggle = (idx: number) => {
-    const rule = displayRules[idx];
-    if (rule === undefined) return;
     if (hasLiveData) {
       const liveRule = apiData?.rules[idx];
       if (liveRule !== undefined) {
         patchRule.mutate({ id: liveRule.id, patch: { enabled: !liveRule.enabled } });
       }
+    } else {
+      setDemoRules((prev) => prev.map((r, i) => (i === idx ? { ...r, enabled: !r.enabled } : r)));
     }
-    // In demo mode we do optimistic local toggle (no API to patch).
   };
 
   // Loading state
