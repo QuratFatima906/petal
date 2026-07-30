@@ -2,16 +2,18 @@
 
 Instagram listening and sentiment dashboard. A Next.js web app (dashboard, query API, webhook receiver) plus — in later work packages — a Node worker for polling, AI enrichment, aggregation and alerts, backed by Postgres and Redis.
 
-pnpm monorepo: `apps/web` (Next.js App Router, Tailwind v4), `e2e` (Playwright), `packages/*` (shared contracts, arriving with WP1+).
+pnpm monorepo: `apps/web` (Next.js App Router, Tailwind v4), `apps/worker` (BullMQ), `e2e` (Playwright), `packages/*` (shared contracts, database, Instagram client, AI enrichment, fixtures).
 
-## Local development
+## Quick start
 
 ```bash
 pnpm install
-docker compose up -d      # postgres:16 + redis:7 (used from WP2 onward)
-pnpm dev                  # Next.js dev server on http://localhost:3000
-pnpm check                # turbo run typecheck + lint + test
+docker compose up -d          # postgres:16 + redis:7
+pnpm --filter @petal/web dev  # http://localhost:3000
+pnpm check                    # turbo run typecheck + lint + test
 ```
+
+Full run-level procedures in [docs/runbook.md](docs/runbook.md).
 
 ## Deploy to Railway (demo mode)
 
@@ -29,4 +31,4 @@ The web app ships as a Docker image built from `Dockerfile.web`; `railway.json` 
    { "data": { "status": "ok", "version": "0.1.0", "demoMode": true } }
    ```
 
-> **Note:** `ANTHROPIC_API_KEY` belongs to the future **worker** service (AI enrichment, WP6) — do not set it on the web app. Postgres/Redis plugins, migrations and the worker deployment arrive with later work packages.
+> **Note:** Full operations runbook in [docs/runbook.md](docs/runbook.md) — covers dead-letter replay, token rotation, alert rules, retention, and common failure modes.
