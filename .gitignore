@@ -18,3 +18,7 @@ playwright-report/
 
 # Claude session state / agent worktrees
 .claude/
+
+# Session artifacts
+.commandcode/
+docs/HANDOFF.md
